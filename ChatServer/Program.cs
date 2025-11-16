@@ -1,29 +1,18 @@
 ﻿using System;
-using System.Net;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-
-class Program
-{
-    static ChatServer server = new ChatServer();
-
-    static void Main()
-    {
-        server.Start(9000);
-        Console.WriteLine("Сервер запущен на порту 9000");
-        Console.ReadLine();
-    }
-}
+using Newtonsoft.Json;
 
 public class ChatServer
 {
     private TcpListener listener;
+    private List<ClientConnection> clients = new List<ClientConnection>();
 
     public void Start(int port)
     {
-        listener = new TcpListener(IPAddress.Any, port);
+        listener = new TcpListener(System.Net.IPAddress.Any, port);
         listener.Start();
-
         Task.Run(AcceptLoopAsync);
     }
 
@@ -31,8 +20,34 @@ public class ChatServer
     {
         while (true)
         {
-            TcpClient client = await listener.AcceptTcpClientAsync();
-            Console.WriteLine("Клиент подключён!");
+            TcpClient tcp = await listener.AcceptTcpClientAsync();
+
+            var conn = new ClientConnection(tcp, this);
+            clients.Add(conn);
+
+            _ = Task.Run(() => conn.ListenAsync());
+
+            Console.WriteLine("Клиент подключён");
         }
+    }
+
+    public async Task BroadcastAsync(Message msg)
+    {
+        foreach (var c in clients)
+        {
+            await c.SendAsync(msg);
+        }
+    }
+
+    public void RemoveClient(ClientConnection client)
+    {
+        clients.Remove(client);
+
+        BroadcastAsync(new Message
+        {
+            Sender = "SERVER",
+            Text = $"{client.Username} вышел",
+            Timestamp = DateTime.Now
+        });
     }
 }
