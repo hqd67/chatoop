@@ -71,5 +71,19 @@ public class Client
             Timestamp = DateTime.Now
         });
     }
+    public Task SendFileAsync(string path)
+    {
+        byte[] bytes = File.ReadAllBytes(path);
+
+        return SendAsync(new Message
+        {
+            Type = "file",
+            Sender = UserName,
+            FileName = Path.GetFileName(path),
+            FileSize = bytes.Length,
+            FileData = Convert.ToBase64String(bytes),
+            Timestamp = DateTime.Now
+        });
+    }
 
 }
