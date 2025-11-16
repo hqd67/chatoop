@@ -1,15 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace ChatServer
+class Program
 {
-    internal class Program
+    static ChatServer server = new ChatServer();
+
+    static void Main()
     {
-        static void Main(string[] args)
+        server.Start(9000);
+        Console.WriteLine("Сервер запущен на порту 9000");
+        Console.ReadLine();
+    }
+}
+
+public class ChatServer
+{
+    private TcpListener listener;
+
+    public void Start(int port)
+    {
+        listener = new TcpListener(IPAddress.Any, port);
+        listener.Start();
+
+        Task.Run(AcceptLoopAsync);
+    }
+
+    private async Task AcceptLoopAsync()
+    {
+        while (true)
         {
+            TcpClient client = await listener.AcceptTcpClientAsync();
+            Console.WriteLine("Клиент подключён!");
         }
     }
 }
