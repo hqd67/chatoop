@@ -61,4 +61,15 @@ public class Client
         string json = JsonConvert.SerializeObject(msg);
         return writer.WriteLineAsync(json);
     }
+    public Task SendTextAsync(string text)
+    {
+        return SendAsync(new Message
+        {
+            Type = "message",
+            Sender = UserName,
+            Text = text,
+            Timestamp = DateTime.Now
+        });
+    }
+
 }
