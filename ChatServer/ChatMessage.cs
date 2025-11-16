@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class Message
+public class ChatMessage
 {
     public string Type { get; set; }
     public string Sender { get; set; }
